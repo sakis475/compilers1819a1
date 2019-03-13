@@ -1,9 +1,10 @@
 """
 Sample script to test ad-hoc scanning by table drive.
 This accepts a number with optional decimal part [0-9]+(\.[0-9]+)?
-
 NOTE: suitable for optional matches
 """
+
+
 
 def getchar(text,pos):
 	""" returns char category at position `pos` of `text`,
@@ -15,11 +16,16 @@ def getchar(text,pos):
 	
 	# **Σημείο #3**: Προαιρετικά, προσθέστε τις δικές σας ομαδοποιήσεις
 	
-	if c>='0' and c<='9': return 'DIGIT'	# 0..9 grouped together
 	
-	if c=='.': return 'DOT'	# dot as a category by itself
-	
-	return c	# anything else
+
+	if c > '0' and c <= '2': return '1OR2'
+
+	if c >= '6' and c <= '9': return 'BIGGERTHANFIVE'
+
+
+	# Αν δευ είναι όλα τα παραπάνω, επέστρεψε το χαρακτήρα αυτούσιο
+	return c;
+
 	
 
 
@@ -60,15 +66,27 @@ def scan(text,transitions,accepts):
 			
 	
 # **Σημείο #1**: Αντικαταστήστε με το δικό σας λεξικό μεταβάσεων
-transitions = { 's0': { 'DIGIT':'s1' },
-       			's1': { 'DIGIT':'s1','DOT':'s2' },
-       			's2': { 'DIGIT':'s3' },
-       			's3': { 'DIGIT':'s3' }       
+transitions = { 
+       			's0': {'3':'s3' ,'1OR2':'s1', '0' : 's1'},
+       			's1': {'0':'s2', '3':'s2' ,'1OR2' : 's2' ,'4' : 's2', '5' : 's2','BIGGERTHANFIVE':'s2' },
+       			's2': {'0':'s5', '3':'s5' ,'1OR2' : 's5' ,'4' : 's5', '5' : 's5','BIGGERTHANFIVE':'s5'},
+       			's3': {'5' : 's4','0':'s2', '3':'s2' ,'1OR2' : 's2' ,'4' : 's2'},
+       			's4': {'0':'s5'},
+       			's5': {'0':'s6', '3':'s6' ,'1OR2' : 's6' ,'4' : 's6', '5' : 's6','BIGGERTHANFIVE':'s6'},
+       			's6': {'0':'s7', '3':'s7' ,'1OR2' : 's7' ,'4' : 's7', '5' : 's7','BIGGERTHANFIVE':'s7'},
+       			's7': {'G' : 's13', 'K' : 's8', 'M' : 's10'},
+       			's8': {'T' : 's9'},
+       			's10': {'P':'s11'},
+       			's11': {'S' : 's9'},
+       			's13': {'0':'s14', '3':'s14' ,'1OR2' : 's14' ,'4' : 's14', '5' : 's14', 'BIGGERTHANFIVE':'s14'},
+       			's14': {'0':'s15', '3':'s15' ,'1OR2' : 's15' ,'4' : 's15', '5' : 's15', 'BIGGERTHANFIVE':'s15'},
+       			's15': {'K': 's8', 'M' : 's10'}
+       			
+
      		  } 
 
 # **Σημείο #2**: Αντικαταστήστε με το δικό σας λεξικό καταστάσεων αποδοχής
-accepts = { 's1':'INT_TOKEN',
-       		's3':'FLOAT_TOKEN'	
+accepts = { 's9':'WIND_TOKEN'
      	  }
 
 
@@ -85,4 +103,3 @@ while text:		# i.e. len(text)>0
 	print("token:",token,"text:",text[:pos])
 	# new text for next scan
 	text = text[pos:]
-	
